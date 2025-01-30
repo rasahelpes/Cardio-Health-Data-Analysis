@@ -1,0 +1,64 @@
+library(ggplot2)
+library(pheatmap)
+library(reshape)
+
+x <- read.csv("C:/Users/rezay/Downloads/cardio_train.csv/cardio_train.csv")
+
+x$gender <- as.factor(x$gender)
+x = na.omit(x)
+summery(x)
+var(x$height)
+var(x$weight)
+
+t_test_result_ChGe = t.test(cholesterol~gender , x)
+print(t_test_result)
+
+t_test_result_WeBeat <- t.test(ap_hi~weight, x)
+print(t_test_result_WeBeat)
+
+t_test_result_CaAc <- t.test(active~cardio,x)
+print(t_test_result_CaAc)
+
+
+pcc_matrix <- cor(x[,c("height", "weight", "ap_hi", "ap_lo", "cholesterol", "gluc")], method = "pearson")
+
+pheatmap(pcc_matrix)
+
+scc_matrix <- cor(x[,c("height", "weight", "ap_hi", "ap_lo", "cholesterol", "gluc")],+
+                    method = "spearman")
+pheatmap(scc_matrix)
+
+ggplot(x , aes (x = as.factor(gender) , y =cholesterol , fill = gender))+ geom_boxplot()
+
+ggplot(x , aes (x =cholesterol, y = ap_hi ,color = gender ))+scale_color_manual(values = c("1" = "blue", "2" = "red"),
+                                                                               labels = c("1" = "Male", "2" = "Female"))+geom_point()
+
+
+calculate_sd <- function(column) {
+  sd_value <- sd(column)
+  return(sd_value)
+}
+calculate_se <- function(column) {
+  n <- length(column)
+  sd_value <- sd(column)
+  se_value <- sd_value / sqrt(n)
+  return(se_value)
+}
+
+columns_to_analyze <- c("cholesterol", "weight", "ap_hi", "ap_lo", "gluc")
+
+
+summary_table <- data.frame(Column = character(), SD = numeric(), SE = numeric(), stringsAsFactors = FALSE)
+
+
+for (col in columns_to_analyze) {
+  sd_value <- calculate_sd(x[[col]])
+  se_value <- calculate_se(x[[col]])
+  summary_table <- rbind(summary_table, data.frame(Column = col, SD = sd_value, SE = se_value))
+}
+
+print(summary_table)
+
+
+
+      
